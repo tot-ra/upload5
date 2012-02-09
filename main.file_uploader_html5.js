@@ -1,3 +1,13 @@
+if(!$.browser.mozilla){
+    XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
+            var ui8a = new Uint8Array(datastr.length);
+            for (var i = 0; i < datastr.length; i++) {
+                    ui8a[i] = (datastr.charCodeAt(i) & 0xff);
+            }
+            this.send(ui8a.buffer);
+    }
+}
+
 $.upload5=function(input, opt){
 	var ME=this;
 	ME.option = {
@@ -9,7 +19,8 @@ $.upload5=function(input, opt){
 		
 		beforeLoad:function() {},
 		onProgress:function(event) {},
-		onComplete:function(event) {}
+		onComplete:function(event) {
+        }
 	};
 
 	if(typeof(opt)=='string'){
@@ -38,77 +49,118 @@ $.upload5=function(input, opt){
         }
         */
         
-        var boundary = '------multipartformboundary' + (new Date).getTime();
-        var dashdash = '--';
-        var crlf     = '\r\n';
 
-        /* Build RFC2388 string. */
-        var builder = '';
 
-        builder += dashdash;
-        builder += boundary;
-        builder += crlf;
-        
-        var xhr = new XMLHttpRequest()    
+        //if($.browser.mozilla)
+        {
+        	var formData = new FormData();
 
-        
-		xhr.upload.addEventListener("progress", ME.option.onProgress, false);
-			
-        xhr.open("POST", ME.option.gate, true);
-        
-        if($.browser.safari){
-        	var formData = new FormData(); 
-        	formData.append("file", data.files.item()); 
-        	xhr.send(formData);
+            for (var i = 0; i < data.files.length; i++) {
+                var xhr = new XMLHttpRequest();
+                //xhr.setRequestHeader("Content-Length", file.size);
+
+                xhr.onload = function(event){
+                	ME.option.onComplete(event,xhr.responseText);
+                };
+
+                xhr.upload.addEventListener("progress", ME.option.onProgress, false);
+                xhr.open("POST", ME.option.gate, true);
+
+                var file = data.files[i];
+                xhr.setRequestHeader('Content-Disposition', 'form-data; name="file[]"; filename="'+file.name+'"');
+                formData.append("file", file);
+                xhr.send(formData);
+            }
+            //xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
         }
-        else{
-        	
-		
-		    for (var i = 0; i < data.files.length; i++) {
-		        var file = data.files[i];
-		
-		        /* Generate headers. */            
-		        builder += 'Content-Disposition: form-data; name="file[]"';
-		        if (file.fileName) {
-		          builder += '; filename="' + file.fileName + '"';
-		        }
-		        builder += crlf;
-		
-		        builder += 'Content-Type: application/octet-stream';
-		        builder += crlf;
-		        builder += crlf; 
-		
-		        /* Append binary data. */
-		        builder += file.getAsBinary();
-		        builder += crlf;
-		
-		        /* Write boundary. */
-		        builder += dashdash;
-		        builder += boundary;
-		        builder += crlf;
+
+/*
+        if($.browser.mozilla){
+            //                        xhr.setRequestHeader('Size', file.size);
+                                    //xhr.setRequestHeader('filename', file.name);
+                                    xhr.setRequestHeader('Content-Disposition', 'form-data; name="file[]"; filename="'+file.name+'"');
+                                    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+                                    //xhr.send(fileEvent.target.result);
+
+
+
+
+                                    xhr.sendAsBinary(fileEvent.target.result);
+        }
+        {
+
+
+
+            for (var i = 0; i < data.files.length; i++) {
+                var file = data.files[i];
+
+                var reader = new FileReader();
+                reader.onload = function(fileEvent) {
+                    console.log(file);
+                    console.log(fileEvent);
+                    if (fileEvent.target.readyState == FileReader.DONE)
+                    {
+                        var xhr = new XMLHttpRequest();
+                        //xhr.setRequestHeader("Content-Length", file.size);
+
+                        xhr.onload = function(event){
+                        	ME.option.onComplete(event,xhr.responseText);
+                        };
+
+                        xhr.upload.addEventListener("progress", ME.option.onProgress, false);
+                        xhr.open("POST", ME.option.gate, true);
+
+
+                        var boundary = '------multipartformboundary' + (new Date).getTime();
+                        var dashdash = '--';
+                        var crlf     = '\r\n';
+
+                        var builder = '';
+
+                        builder += dashdash;
+                        builder += boundary;
+                        builder += crlf;
+
+                        builder += 'Content-Disposition: form-data; name="file[]"';
+                        if (file.fileName) {
+                          builder += '; filename="' + file.fileName + '"';
+                        }
+                        builder += crlf;
+
+                        builder += 'Content-Type: application/octet-stream';
+                        builder += crlf;
+                        builder += crlf;
+
+                        builder += fileEvent.target.result;
+                        builder += crlf;
+
+                        builder += dashdash;
+                        builder += boundary;
+                        builder += crlf;
+
+                        //------------
+                            builder += dashdash;
+                            builder += boundary;
+                            builder += dashdash;
+                            builder += crlf;
+
+                        xhr.setRequestHeader('content-type', 'multipart/form-data; boundary=' + boundary);
+                        xhr.sendAsBinary(builder);
+
+                    }
+                    else{
+                        ME.option.onMemoryRead(fileEvent);
+                    }
+
+                 };
+
+                reader.readAsBinaryString(file);// || file.getAsBinary();
+
 		    }
-		
-		    
-		    /* Mark end of the request. */
-		    builder += dashdash;
-		    builder += boundary;
-		    builder += dashdash;
-		    builder += crlf;
-		    
-        	xhr.setRequestHeader('content-type', 'multipart/form-data; boundary=' + boundary);
-	        
-	        try{
-	        	xhr.sendAsBinary(builder);        
-	        }
-	        catch(err){
-				Content.notePanel.set('error',t("Upload failed - use only latin-encoded filenames"),13);
-	        	return false;
-	        }
         }
-        
-        xhr.onload = function(event){
-        	ME.option.onComplete(event,xhr.responseText);
-        };
+        */
+
     }
 			
 	$(input).get(0).addEventListener('drop', ME.upload, false);
@@ -118,28 +170,29 @@ $.upload5=function(input, opt){
     	event.stopPropagation();
     	event.preventDefault();
     	
-    	if($.browser.webkit) event.originalEvent.dataTransfer.dropEffect = 'copy';
+    	if($.browser.webkit) event.dataTransfer.dropEffect = 'copy';
     }, false);
     
     $(input).get(0).addEventListener('dragover',	function(event) { 
     	event.stopPropagation();
     	event.preventDefault();
     	
-
-		if(!event.originalEvent.dataTransfer) return;
-		
+		if(!event.dataTransfer) return;
 
 		//FF
-		if(event.originalEvent.dataTransfer.types.contains&&!dt.types.contains("Files")) return;
+		if(event.dataTransfer.types.contains && !event.dataTransfer.types.contains("Files")) return;
+
 		//Chrome
-		if(event.originalEvent.dataTransfer.types.indexOf&&dt.types.indexOf("Files")==-1) return;
+		if(event.dataTransfer.types.indexOf && event.dataTransfer.types.indexOf("Files")==-1) return;
 		
 		
     	$(input).css("background-color", ME.option.dragEnterColor); 
 
     }, false);
     
-    $(input).get(0).addEventListener('dragexit', 	function(event) { $(input).css("background-color", ME.option.dragExitColor); }, false);
+    $(input).get(0).addEventListener('dragexit', 	function(event) {
+        $(input).css("background-color", ME.option.dragExitColor);
+    }, false);
       
 	return ME;
 }
