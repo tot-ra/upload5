@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Upload 5</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="main.file_uploader_html5.js"></script>
+</head>
+<body>
+<div id="dropzone" style="width:100%; height: 500px; border: 1px solid #adff2f;">
+Just drag file here somewhere..
+	<progress value=0 max=100 style="display:none;"></progress>
+</div>
+
+
+<script language="Javascript">
+	$('#dropzone').upload5({
+		beforeLoad: function () {
+			$('progress').show();
+			this.gate = 'receiver.php?someGetParam=1234';
+		},
+
+		onProgress: function (event) {
+			console.log(event);
+			if (event.loaded && event.total) {
+				var percentage = Math.round((event.loaded * 100) / event.total);
+
+				$('progress').attr('value', percentage);
+
+			}
+		},
+
+		onComplete: function (event, txt) {
+
+		}
+	});
+
+</script>
+</body>
+</html>

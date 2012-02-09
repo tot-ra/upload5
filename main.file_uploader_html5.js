@@ -8,7 +8,7 @@ if(!$.browser.mozilla){
     }
 }
 
-$.upload5=function(input, opt){
+$.upload5 = function(input, opt){
 	var ME=this;
 	ME.option = {
 		gate:'',
@@ -31,7 +31,9 @@ $.upload5=function(input, opt){
 
 	
 	ME.upload = function (event) {
-		
+
+        $(input).css("background-color", ME.option.dragExitColor);
+
 		event.stopPropagation();
 		event.preventDefault();
         
@@ -161,7 +163,9 @@ $.upload5=function(input, opt){
         }
         */
 
-    }
+        return false;
+
+    };
 			
 	$(input).get(0).addEventListener('drop', ME.upload, false);
 	
@@ -190,12 +194,12 @@ $.upload5=function(input, opt){
 
     }, false);
     
-    $(input).get(0).addEventListener('dragexit', 	function(event) {
+    $(input).get(0).addEventListener('dragend', 	function(event) {
         $(input).css("background-color", ME.option.dragExitColor);
     }, false);
-      
+
 	return ME;
-}
+};
 
 $.fn.upload5 = function upload5(options){
 	this.each(function() {
