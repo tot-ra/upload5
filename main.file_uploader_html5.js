@@ -1,4 +1,4 @@
-if(!$.browser.mozilla){
+/*if(!$.browser.mozilla){
     XMLHttpRequest.prototype.sendAsBinary = function(datastr) {
             var ui8a = new Uint8Array(datastr.length);
             for (var i = 0; i < datastr.length; i++) {
@@ -7,7 +7,7 @@ if(!$.browser.mozilla){
             this.send(ui8a.buffer);
     }
 }
-
+*/
 $.upload5 = function(input, opt){
 	var ME=this;
 	ME.option = {

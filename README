@@ -1,2 +1,7 @@
 A html5 drag and drop file upload jquery plugin
 http://kurapov.name/eng/tech/drag_drop_file_upload
+
+-Supports Chrome and Firefox
+-Shows upload progress
+-Very lightweight
+-Supports multiple files being dropped.. each file is uploaded in a separate thread
